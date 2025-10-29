@@ -1,0 +1,15 @@
+[Unit]
+Description=Openbox WM on :%i
+After=xvfb@%i.service
+Requires=xvfb@%i.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/sandboxmcp/visual.env
+Environment=DISPLAY=:%i
+ExecStart=/usr/bin/openbox
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

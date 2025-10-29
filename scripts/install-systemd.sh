@@ -11,10 +11,6 @@ UNIT_SOURCE="${REPO_ROOT}/systemd"
 UNIT_TARGET="/etc/systemd/system"
 
 UNITS=(
-  xvfb.service
-  openbox.service
-  x11vnc.service
-  novnc.service
   cua-computer.service
 )
 
@@ -23,6 +19,6 @@ for unit in "${UNITS[@]}"; do
 done
 
 systemctl daemon-reload
-systemctl enable --now xvfb.service openbox.service x11vnc.service novnc.service cua-computer.service
+systemctl enable --now cua-computer.service
 
 echo "[sandboxmcp] Systemd units installed and started."

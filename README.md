@@ -73,6 +73,62 @@ make compose-up               # поднимаем Caddy + FastAPI
 - `GET /cua/health` — проверка доступности CUA Computer Server (возвращает HTTP-статус и тело ответа).
 - `GET /policy` — отдаёт YAML с правилами выбора инструментов (читается из `policy/decision.yaml` или из файла, указанного в `POLICY_FILE`).
 
+## Визуальное окружение (опционально)
+В `.env` появилась переменная `ENABLE_VISUAL` (`auto|true|false`). По умолчанию `auto`: окружение разворачивается только по запросу.
+
+1. Настройте `.env`:
+   ```bash
+   ENABLE_VISUAL=true            # или оставьте auto и вызовите команды вручную
+   DISPLAY_NUM=:1
+   NOVNC_LISTEN=127.0.0.1
+   NOVNC_PORT=6080
+   VNC_PORT=5901
+   QT_OPENGL=software
+   LIBGL_ALWAYS_SOFTWARE=1
+   CHROMIUM_FLAGS="--disable-gpu --no-sandbox --disable-dev-shm-usage"
+   ```
+2. Выполните (от root):
+   ```bash
+   make visual-bootstrap    # ставит Xvfb/Openbox/noVNC, шрифты и браузеры (идемпотентно)
+   make visual-up           # выкладывает unit-файлы и запускает xvfb@1, openbox@1, x11vnc@1, novnc@1
+   make visual-status       # проверка статусов
+   ```
+   Для остановки используйте `make visual-down`.
+3. Проверки:
+   ```bash
+   systemctl is-active xvfb@1 openbox@1 x11vnc@1 novnc@1
+   ```
+   Все сервисы должны быть `active`. Повторные вызовы команд безопасны — сценарий идемпотентен.
+
+### Подключение и запуск приложений
+- Туннель с macOS/Linux:
+  ```bash
+  ssh -N \
+    -L 127.0.0.1:${NOVNC_PORT}:127.0.0.1:${NOVNC_PORT} \
+    -L 127.0.0.1:${VNC_PORT}:127.0.0.1:${VNC_PORT} \
+    root@sandbox.dev.plag.space
+  ```
+  Затем откройте `http://127.0.0.1:${NOVNC_PORT}/vnc.html` (логин/пароль задаются в `.env`).
+- Telegram Desktop:
+  ```bash
+  DISPLAY=${DISPLAY_NUM} QT_OPENGL=${QT_OPENGL} \
+  LIBGL_ALWAYS_SOFTWARE=${LIBGL_ALWAYS_SOFTWARE} telegram-desktop &
+  ```
+- Chromium без GPU:
+  ```bash
+  DISPLAY=${DISPLAY_NUM} LIBGL_ALWAYS_SOFTWARE=${LIBGL_ALWAYS_SOFTWARE} \
+  chromium ${CHROMIUM_FLAGS} &
+  ```
+
+### Ресурсные ориентиры
+- CPU: 1–2 vCPU достаточно; noVNC + Chromium/Telegram дают до ~80–120% одного ядра.
+- RAM: базовый стек (Xvfb+Openbox+x11vnc+noVNC) ≈ 200–300 МБ; Telegram Desktop 300–800 МБ; Chromium 300–700 МБ.
+- Диск: Playwright-браузеры и кэши Telegram занимают до 2–3 ГБ. Для чистки: `rm -rf ~/.local/share/TelegramDesktop/*` (после остановки Telegram).
+- Сеть: доступ только через SSH-туннель (или Caddy c basic auth, если раскомментирован домен `NOVNC_DOMAIN`).
+
+### Отсутствие GPU
+Переменные `QT_OPENGL=software`, `LIBGL_ALWAYS_SOFTWARE=1`, `CHROMIUM_FLAGS` автоматически попадают в `/etc/sandboxmcp/visual.env` и экспортируются в unit-файлы. Благодаря этому Telegram Desktop и Chromium работают через Mesa/llvmpipe на CPU.
+
 ## Чеклист развёртывания на новый сервер
 1. **SSH**: Настроить обмен ключами между VDS1 ↔ VDS2 (`/root/.ssh/config`).
 2. **Переменные**: `cp .env.example .env`, заполнить email, домены (или оставить `.localhost` для теста), задать `BASIC_AUTH_PASS` (хэш `caddy hash-password`), TELEGRAM_*.

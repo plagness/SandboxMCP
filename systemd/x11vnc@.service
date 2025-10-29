@@ -1,0 +1,15 @@
+[Unit]
+Description=x11vnc on :%i (localhost only)
+After=openbox@%i.service
+Requires=openbox@%i.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/sandboxmcp/visual.env
+Environment=DISPLAY=:%i
+ExecStart=/usr/bin/x11vnc -display :%i -nopw -xkb -forever -shared -listen $NOVNC_LISTEN -rfbport $VNC_PORT
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

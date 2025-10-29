@@ -13,30 +13,11 @@ export DEBIAN_FRONTEND=noninteractive
 echo "[sandboxmcp] Installing base apt packages..."
 apt-get update
 apt-get install -y \
-  xorg xvfb x11vnc openbox novnc websockify \
   python3 python3-pip python3-venv python3-tk \
   git curl docker.io nodejs npm \
-  firefox-esr fonts-liberation \
+  fonts-liberation \
   pipx snapd libgtk-3-0 libnss3 libasound2 \
   wget gnupg
-
-if ! command -v chromium-browser >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
-  if command -v snap >/dev/null 2>&1; then
-    echo "[sandboxmcp] Installing Chromium via snap..."
-    snap install chromium --classic || true
-  else
-    echo "[sandboxmcp] snap not available; install Chromium manually if требуется." >&2
-  fi
-fi
-
-if ! command -v telegram-desktop >/dev/null 2>&1; then
-  if command -v snap >/dev/null 2>&1; then
-    echo "[sandboxmcp] Installing Telegram Desktop via snap..."
-    snap install telegram-desktop || true
-  else
-    echo "[sandboxmcp] snap not available; install Telegram Desktop manually." >&2
-  fi
-fi
 
 echo "[sandboxmcp] Ensuring pipx path..."
 pipx ensurepath

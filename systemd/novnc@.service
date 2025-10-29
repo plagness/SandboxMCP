@@ -1,0 +1,14 @@
+[Unit]
+Description=noVNC proxy for :%i
+After=x11vnc@%i.service
+Requires=x11vnc@%i.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/sandboxmcp/visual.env
+ExecStart=/usr/share/novnc/utils/novnc_proxy --vnc $NOVNC_LISTEN:$VNC_PORT --listen $NOVNC_LISTEN:$NOVNC_PORT
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
