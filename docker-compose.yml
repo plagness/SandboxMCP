@@ -1,0 +1,42 @@
+services:
+  fastapi:
+    build:
+      context: ./fastapi-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FASTAPI_PORT}:8100"
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - fastapi
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ACME_AGREE: "true"
+      ACME_EMAIL: ${ACME_EMAIL}
+      SANDBOX_DOMAIN: ${SANDBOX_DOMAIN}
+      NOVNC_DOMAIN: ${NOVNC_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER}
+      BASIC_AUTH_PASS: ${BASIC_AUTH_PASS}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  internal:
+    driver: bridge

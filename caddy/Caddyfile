@@ -1,0 +1,19 @@
+{
+  email {$ACME_EMAIL}
+}
+
+{$SANDBOX_DOMAIN} {
+  respond /health "{$SANDBOX_DOMAIN} OK" 200
+  respond "{$SANDBOX_DOMAIN} OK" 200
+}
+
+{$NOVNC_DOMAIN} {
+  basicauth {
+    {$BASIC_AUTH_USER} {$BASIC_AUTH_PASS}
+  }
+  reverse_proxy host.docker.internal:6080
+}
+
+{$API_DOMAIN} {
+  reverse_proxy fastapi:8100
+}

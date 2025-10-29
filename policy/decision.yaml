@@ -1,0 +1,28 @@
+ui_target:
+  web:
+    prefer: playwright
+    fallback: cua
+  telegram_desktop:
+    prefer: cua
+    notes: "Playwright не покрывает UI нативного приложения Telegram"
+  telegram_mcp:
+    enabled: true
+    purpose: "API-интеракции (отправка сообщений, проверка ответов бота) без мышки"
+
+typescript:
+  trigger_dev:
+    mode: "sdk"
+    enabled: true
+
+fastapi:
+  host: "127.0.0.1"
+  port: 8100
+  public_domain: "${API_DOMAIN}"
+  use_cases:
+    - "webhooks от агентов/тестов"
+    - "callback-и Playwright/Telegram MCP"
+    - "простые API для glue-логики"
+
+mcp_servers:
+  location: "VDS2"
+  launch_via_ssh: true

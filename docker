@@ -1,0 +1,13 @@
+# Быстрые команды docker compose для SandboxMCP
+# запуск / обновление сервисов
+cd /root/sandboxmcp && docker compose up -d
+
+# проверка статуса
+cd /root/sandboxmcp && docker compose ps
+
+# просмотр логов
+cd /root/sandboxmcp && docker compose logs -f caddy
+cd /root/sandboxmcp && docker compose logs -f fastapi
+
+# остановка стеков
+cd /root/sandboxmcp && docker compose down
