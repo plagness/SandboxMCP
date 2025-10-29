@@ -5,6 +5,20 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${FASTAPI_PORT}:8100"
+    environment:
+      FASTAPI_HOST: ${FASTAPI_HOST}
+      FASTAPI_PORT: ${FASTAPI_PORT}
+      SANDBOX_DOMAIN: ${SANDBOX_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
+      NOVNC_DOMAIN: ${NOVNC_DOMAIN}
+      COMPUTER_SERVER_HOST: ${COMPUTER_SERVER_HOST}
+      COMPUTER_SERVER_PORT: ${COMPUTER_SERVER_PORT}
+      COMPUTER_SERVER_HEALTH_ENDPOINT: ${COMPUTER_SERVER_HEALTH_ENDPOINT}
+      POLICY_FILE: ${POLICY_FILE}
+    volumes:
+      - ./policy:/app/policy:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - internal
 

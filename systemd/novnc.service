@@ -1,0 +1,12 @@
+[Unit]
+Description=noVNC websockify proxy
+After=x11vnc.service
+Requires=x11vnc.service
+
+[Service]
+ExecStart=/usr/bin/websockify --web=/usr/share/novnc/ 6080 127.0.0.1:5901
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

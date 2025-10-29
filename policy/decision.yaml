@@ -15,8 +15,8 @@ typescript:
     enabled: true
 
 fastapi:
-  host: "127.0.0.1"
-  port: 8100
+  host: "${FASTAPI_HOST}"
+  port: ${FASTAPI_PORT}
   public_domain: "${API_DOMAIN}"
   use_cases:
     - "webhooks от агентов/тестов"

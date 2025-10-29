@@ -1,0 +1,13 @@
+[Unit]
+Description=x11vnc on display :1
+After=openbox.service
+Requires=openbox.service
+
+[Service]
+Environment=DISPLAY=:1
+ExecStart=/usr/bin/x11vnc -display :1 -nopw -xkb -forever -shared -listen 127.0.0.1 -rfbport 5901
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

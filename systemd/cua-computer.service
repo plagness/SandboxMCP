@@ -1,0 +1,15 @@
+[Unit]
+Description=CUA Computer Server (native)
+After=openbox.service
+Requires=openbox.service
+
+[Service]
+Environment=DISPLAY=:1
+Environment=COMPUTER_SERVER_URL=http://127.0.0.1:8000
+ExecStart=/root/.local/bin/cua-computer-server --host 0.0.0.0 --port 8000
+Restart=always
+User=root
+WorkingDirectory=/root
+
+[Install]
+WantedBy=multi-user.target

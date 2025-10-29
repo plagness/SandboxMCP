@@ -8,7 +8,7 @@
 }
 
 {$NOVNC_DOMAIN} {
-  basicauth {
+  basic_auth {
     {$BASIC_AUTH_USER} {$BASIC_AUTH_PASS}
   }
   reverse_proxy host.docker.internal:6080
