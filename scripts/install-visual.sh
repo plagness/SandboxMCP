@@ -40,6 +40,7 @@ PACKAGES=(
   novnc
   websockify
   x11-xserver-utils
+  xterm
   dbus-x11
   fonts-dejavu-core
   fonts-liberation

@@ -16,4 +16,8 @@ if command -v xsetroot >/dev/null 2>&1; then
   xsetroot -solid "#202225" || true
 fi
 
+if command -v xterm >/dev/null 2>&1; then
+  xterm &
+fi
+
 exec /usr/bin/openbox
