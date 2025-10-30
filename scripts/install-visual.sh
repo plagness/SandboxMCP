@@ -42,7 +42,6 @@ PACKAGES=(
   fonts-dejavu-core
   fonts-liberation
   fonts-noto-core
-  firefox-esr
   mesa-utils
   libgl1-mesa-dri
 )
@@ -52,6 +51,13 @@ SERVICES=(
   openbox@${DISPLAY_ID}.service
   x11vnc@${DISPLAY_ID}.service
   novnc@${DISPLAY_ID}.service
+)
+
+LEGACY_UNITS=(
+  xvfb.service
+  openbox.service
+  x11vnc.service
+  novnc.service
 )
 
 log() {
@@ -105,6 +111,7 @@ install_packages() {
   fi
 
   ensure_chromium
+  ensure_firefox
   ensure_telegram
 }
 
@@ -123,6 +130,29 @@ ensure_chromium() {
     snap install chromium --classic || log "Failed to install Chromium via snap; install manually."
   else
     log "Chromium package not available and snap missing; install manually if требуется."
+  fi
+}
+
+ensure_firefox() {
+  if command -v firefox >/dev/null 2>&1 || command -v firefox-esr >/dev/null 2>&1; then
+    return
+  fi
+
+  if apt-get install -y --no-install-recommends firefox >/dev/null 2>&1; then
+    log "Firefox installed via apt."
+    return
+  fi
+
+  if apt-get install -y --no-install-recommends firefox-esr >/dev/null 2>&1; then
+    log "Firefox ESR installed via apt."
+    return
+  fi
+
+  if command -v snap >/dev/null 2>&1; then
+    log "Installing Firefox via snap (fallback)..."
+    snap install firefox || log "Failed to install Firefox via snap; install manually."
+  else
+    log "Firefox package not available and snap missing; install manually."
   fi
 }
 
@@ -188,6 +218,17 @@ install_units() {
   systemctl daemon-reload
 }
 
+remove_legacy_units() {
+  require_root
+  local legacy
+  for legacy in "${LEGACY_UNITS[@]}"; do
+    if systemctl list-unit-files | grep -q "^${legacy}"; then
+      systemctl disable --now "${legacy}" 2>/dev/null || true
+      rm -f "/etc/systemd/system/${legacy}"
+    fi
+  done
+}
+
 start_units() {
   require_root
   local srv
@@ -200,23 +241,23 @@ stop_units() {
   require_root
   local srv
   for srv in "${SERVICES[@]}"; do
-    if systemctl list-unit-files | grep -q "^${srv}"; then
-      systemctl disable --now "${srv}" || true
-    else
-      systemctl disable --now "${srv}" 2>/dev/null || true
-    fi
+    systemctl disable --now "${srv}" 2>/dev/null || true
   done
 }
 
 status_units() {
   local srv
   for srv in "${SERVICES[@]}"; do
-    if systemctl list-unit-files "${srv}" >/dev/null 2>&1; then
-      local state
-      state=$(systemctl is-active "${srv}" 2>/dev/null || echo "inactive")
-      echo "${srv}: ${state}"
+    if systemctl is-active "${srv}" >/dev/null 2>&1; then
+      echo "${srv}: active"
     else
-      echo "${srv}: not installed"
+      local state
+      state=$(systemctl is-failed "${srv}" 2>/dev/null || true)
+      if [[ -n "${state}" ]]; then
+        echo "${srv}: ${state}"
+      else
+        echo "${srv}: inactive"
+      fi
     fi
   done
 }
@@ -255,6 +296,7 @@ case "${ACTION}" in
     install_packages
     write_visual_env
     install_units
+    remove_legacy_units
     if ! should_skip_enable; then
       start_units
       log "Visual services started on DISPLAY=${DISPLAY_NUM}."

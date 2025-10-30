@@ -5,7 +5,7 @@ ENABLE_VISUAL := $(strip $(ENABLE_VISUAL))
 ENABLE_VISUAL_LOWER := $(shell echo "$(ENABLE_VISUAL)" | tr 'A-Z' 'a-z')
 
 .PHONY: bootstrap compose-up compose-down compose-logs mcp-playwright mcp-docker mcp-telegram setup-systemd \
-	visual-bootstrap visual-up visual-down visual-status
+	visual-bootstrap visual-up visual-down visual-status tg-session
 
 bootstrap:
 	./scripts/bootstrap.sh
@@ -30,6 +30,9 @@ mcp-docker:
 
 mcp-telegram:
 	./scripts/run-telegram-mcp.sh
+
+tg-session:
+	./scripts/generate-telegram-session.sh
 
 ifeq ($(ENABLE_VISUAL_LOWER),false)
 visual-bootstrap:

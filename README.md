@@ -1,5 +1,7 @@
 # SandboxMCP
 
+**Текущая версия:** `1.0.0` (см. [CHANGELOG.md](CHANGELOG.md)). Используем схему `x.y.z`: `x` — крупные стабильные релизы, `y` — минорные рабочие обновления, `z` — фиксы и тестирование.
+
 Набор инструкций и вспомогательных файлов для подготовки тестовой площадки SandboxMCP на сервере VDS2 (`SANDBOX_DOMAIN`). Стек предназначен для удалённых UI/интеграционных тестов и вспомогательных сервисов агента Codex.
 
 ## Цели
@@ -66,7 +68,8 @@ make compose-up               # поднимаем Caddy + FastAPI
 - `./scripts/run-playwright-mcp.sh` — запускает Playwright MCP (`npx @playwright/mcp@latest`), подхватывает `.env`.
 - `./scripts/run-docker-mcp.sh` — CLI для Docker MCP (пакет `docker-mcp`, установлен через pipx).
 - `./scripts/run-telegram-mcp.sh` — активирует venv `telegram-mcp/.venv`, экспортирует TELEGRAM_* из `.env` и стартует MCP.
-Эти скрипты связаны с целями `make mcp-*` и пригодны для вызова по SSH с VDS1.
+- `make tg-session` — интерактивный генератор TELEGRAM_SESSION_STRING (через Telethon), при желании обновляет `.env` (создаёт резервную копию).
+Эти скрипты связаны с целями `make mcp-*`/`make tg-session` и пригодны для вызова по SSH с VDS1.
 
 ## FastAPI-эндпоинты
 - `GET /health` — базовый healthcheck самого FastAPI.
@@ -150,6 +153,41 @@ make compose-up               # поднимаем Caddy + FastAPI
 - Для боевого домена пропишите `SANDBOX_DOMAIN`/`NOVNC_DOMAIN`/`API_DOMAIN` в DNS и обновите `.env`.
 - `COMPUTER_SERVER_HOST` по умолчанию `host.docker.internal`, чтобы контейнер FastAPI мог достучаться до CUA, слушающего на хосте.
 - `POLICY_FILE` указывает путь внутри контейнера (`/app/policy/decision.yaml`), файл из хоста монтируется в контейнер автоматически.
+
+## Telegram MCP — заполнение `.env`
+```
+TELEGRAM_API_ID=12345678
+TELEGRAM_API_HASH=abcd1234efgh5678ijkl9012mnop3456
+TELEGRAM_SESSION_NAME=telegram_session
+TELEGRAM_SESSION_STRING=1AQA...длинная_строка.../==
+```
+
+- `TELEGRAM_API_ID` — числовой ID приложения Telegram (https://my.telegram.org → API development tools → Create new application).
+- `TELEGRAM_API_HASH` — секретный hash того же приложения (не токен бота!).
+- `TELEGRAM_SESSION_NAME` — имя сессии (можно оставить `telegram_session`).
+- `TELEGRAM_SESSION_STRING` — base64-строка с пользовательской авторизацией; заменяет `.session`-файл Telethon.
+
+### Как получить TELEGRAM_SESSION_STRING
+1. Убедитесь, что окружение готово (`make bootstrap` создаёт `telegram-mcp/.venv`).
+2. Запустите `make tg-session` — скрипт запросит `API_ID`/`API_HASH`, пройдёт авторизацию в Telegram, выведет строку и предложит записать её в `.env` (создаст резервную копию).
+
+Альтернативно вручную:
+```bash
+. /opt/telegram-mcp/.venv/bin/activate
+python - <<'PY'
+from telethon.sync import TelegramClient
+from telethon.sessions import StringSession
+
+api_id = int(input("API_ID: ").strip())
+api_hash = input("API_HASH: ").strip()
+
+with TelegramClient(StringSession(), api_id, api_hash) as client:
+    print("\nTELEGRAM_SESSION_STRING=" + client.session.save())
+PY
+```
+Скопируйте всё после `TELEGRAM_SESSION_STRING=` и вставьте в `.env`.
+
+**Безопасность:** строка-сессия даёт полный доступ к аккаунту. Храните `.env` c правами `600`, не добавляйте в репозиторий. При `Revoke` в my.telegram.org значение станет недействительным. Боты авторизуются по отдельному токену и к этому блоку не относятся. Сервер без GPU работает нормально: Telethon взаимодействует только через API, визуал нужен лишь для ручного управления Telegram Desktop.
 
 ## Следующие шаги
 - Доработать `policy/decision.yaml` (подключение к FastAPI, выдача контекста агенту).

@@ -10,3 +10,6 @@ cd /root/sandboxmcp && make compose-logs
 
 # остановка стеков
 cd /root/sandboxmcp && make compose-down
+
+# визуальное окружение (опционально)
+cd /root/sandboxmcp && make visual-status

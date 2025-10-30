@@ -1,7 +1,7 @@
 [Unit]
 Description=CUA Computer Server (native)
-After=openbox.service
-Requires=openbox.service
+After=openbox@1.service
+Requires=openbox@1.service
 
 [Service]
 Environment=DISPLAY=:1
