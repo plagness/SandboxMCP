@@ -14,3 +14,4 @@
 - Документация по переменным `.env`, в том числе подробный гайд по настройке Telegram MCP и без-GPU режиму.
 - FastAPI эндпоинты `/health`, `/cua/health`, `/policy` и проверка CUA Computer Server.
 - Исправлен health-check CUA (используется `/status`) и настроен Openbox wrapper для корректного отображения в noVNC.
+- Автоматический запуск `xterm` в сессии Openbox, чтобы избежать «чёрного экрана» в noVNC.

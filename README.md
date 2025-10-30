@@ -112,6 +112,7 @@ make compose-up               # поднимаем Caddy + FastAPI
     root@sandbox.dev.plag.space
   ```
   Затем откройте `http://127.0.0.1:${NOVNC_PORT}/vnc.html` (логин/пароль задаются в `.env`).
+- При запуске Openbox автоматически стартует `xterm`; закрывать его не обязательно, можно свернуть. Правый клик по рабочему столу открывает контекстное меню Openbox.
 - Telegram Desktop:
   ```bash
   DISPLAY=${DISPLAY_NUM} QT_OPENGL=${QT_OPENGL} \
