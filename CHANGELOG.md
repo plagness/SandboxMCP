@@ -13,3 +13,4 @@
 - Скрипты для запуска MCP (Playwright, Docker, Telegram) и bootstrap среды.
 - Документация по переменным `.env`, в том числе подробный гайд по настройке Telegram MCP и без-GPU режиму.
 - FastAPI эндпоинты `/health`, `/cua/health`, `/policy` и проверка CUA Computer Server.
+- Исправлен health-check CUA (используется `/status`) и настроен Openbox wrapper для корректного отображения в noVNC.

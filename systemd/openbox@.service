@@ -8,7 +8,7 @@ Type=simple
 User=root
 EnvironmentFile=/etc/sandboxmcp/visual.env
 Environment=DISPLAY=:%i
-ExecStart=/usr/bin/openbox
+ExecStart=/usr/local/bin/openbox-wrapper.sh %i
 Restart=always
 
 [Install]

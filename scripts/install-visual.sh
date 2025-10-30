@@ -5,6 +5,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${REPO_ROOT}/.env"
 VISUAL_ENV_FILE="/etc/sandboxmcp/visual.env"
 SYSTEMD_DIR="${REPO_ROOT}/systemd"
+OPENBOX_WRAPPER_SRC="${REPO_ROOT}/scripts/openbox-wrapper.sh"
+OPENBOX_WRAPPER_DEST="/usr/local/bin/openbox-wrapper.sh"
 DISPLAY_DEFAULT=":1"
 
 if [[ -f "${ENV_FILE}" ]]; then
@@ -218,6 +220,13 @@ install_units() {
   systemctl daemon-reload
 }
 
+install_wrappers() {
+  require_root
+  if [[ -f "${OPENBOX_WRAPPER_SRC}" ]]; then
+    install -m 0755 "${OPENBOX_WRAPPER_SRC}" "${OPENBOX_WRAPPER_DEST}"
+  fi
+}
+
 remove_legacy_units() {
   require_root
   local legacy
@@ -233,8 +242,16 @@ start_units() {
   require_root
   local srv
   for srv in "${SERVICES[@]}"; do
-    systemctl enable --now "${srv}"
+    systemctl enable "${srv}" >/dev/null 2>&1 || true
+    systemctl restart "${srv}" || systemctl start "${srv}"
   done
+}
+
+ensure_cua_running() {
+  require_root
+  if systemctl list-unit-files cua-computer.service >/dev/null 2>&1; then
+    systemctl restart cua-computer.service || true
+  fi
 }
 
 stop_units() {
@@ -296,9 +313,11 @@ case "${ACTION}" in
     install_packages
     write_visual_env
     install_units
+    install_wrappers
     remove_legacy_units
     if ! should_skip_enable; then
       start_units
+      ensure_cua_running
       log "Visual services started on DISPLAY=${DISPLAY_NUM}."
     fi
     ;;
