@@ -109,7 +109,7 @@ make compose-up               # поднимаем Caddy + FastAPI
   ssh -N \
     -L 127.0.0.1:${NOVNC_PORT}:127.0.0.1:${NOVNC_PORT} \
     -L 127.0.0.1:${VNC_PORT}:127.0.0.1:${VNC_PORT} \
-    root@sandbox.dev.plag.space
+    root@sandbox.example.com
   ```
   Затем откройте `http://127.0.0.1:${NOVNC_PORT}/vnc.html` (логин/пароль задаются в `.env`).
 - При запуске Openbox автоматически стартует `xterm`; закрывать его не обязательно, можно свернуть. Правый клик по рабочему столу открывает контекстное меню Openbox.
