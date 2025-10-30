@@ -1,5 +1,5 @@
 [Unit]
-Description=Openbox WM on :%i
+Description=XFCE Session on :%i
 After=xvfb@%i.service
 Requires=xvfb@%i.service
 
@@ -8,7 +8,7 @@ Type=simple
 User=root
 EnvironmentFile=/etc/sandboxmcp/visual.env
 Environment=DISPLAY=:%i
-ExecStart=/usr/local/bin/openbox-wrapper.sh %i
+ExecStart=/usr/local/bin/start-xfce.sh %i
 Restart=always
 
 [Install]

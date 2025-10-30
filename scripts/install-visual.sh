@@ -5,8 +5,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${REPO_ROOT}/.env"
 VISUAL_ENV_FILE="/etc/sandboxmcp/visual.env"
 SYSTEMD_DIR="${REPO_ROOT}/systemd"
-OPENBOX_WRAPPER_SRC="${REPO_ROOT}/scripts/openbox-wrapper.sh"
-OPENBOX_WRAPPER_DEST="/usr/local/bin/openbox-wrapper.sh"
+XFCE_STARTER_SRC="${REPO_ROOT}/scripts/start-xfce.sh"
+XFCE_STARTER_DEST="/usr/local/bin/start-xfce.sh"
 DISPLAY_DEFAULT=":1"
 
 if [[ -f "${ENV_FILE}" ]]; then
@@ -35,12 +35,12 @@ CHROMIUM_FLAGS="${CHROMIUM_FLAGS:---disable-gpu --no-sandbox --disable-dev-shm-u
 PACKAGES=(
   xorg
   xvfb
-  openbox
+  xfce4
+  xfce4-terminal
   x11vnc
   novnc
   websockify
   x11-xserver-utils
-  xterm
   dbus-x11
   fonts-dejavu-core
   fonts-liberation
@@ -51,7 +51,7 @@ PACKAGES=(
 
 SERVICES=(
   xvfb@${DISPLAY_ID}.service
-  openbox@${DISPLAY_ID}.service
+  xfce@${DISPLAY_ID}.service
   x11vnc@${DISPLAY_ID}.service
   novnc@${DISPLAY_ID}.service
 )
@@ -215,7 +215,7 @@ install_unit() {
 
 install_units() {
   require_root
-  for unit in xvfb@.service openbox@.service x11vnc@.service novnc@.service; do
+  for unit in xvfb@.service xfce@.service x11vnc@.service novnc@.service; do
     install_unit "${unit}"
   done
   systemctl daemon-reload
@@ -223,8 +223,8 @@ install_units() {
 
 install_wrappers() {
   require_root
-  if [[ -f "${OPENBOX_WRAPPER_SRC}" ]]; then
-    install -m 0755 "${OPENBOX_WRAPPER_SRC}" "${OPENBOX_WRAPPER_DEST}"
+  if [[ -f "${XFCE_STARTER_SRC}" ]]; then
+    install -m 0755 "${XFCE_STARTER_SRC}" "${XFCE_STARTER_DEST}"
   fi
 }
 
@@ -237,6 +237,9 @@ remove_legacy_units() {
       rm -f "/etc/systemd/system/${legacy}"
     fi
   done
+  systemctl disable --now openbox@${DISPLAY_ID}.service 2>/dev/null || true
+  rm -f /etc/systemd/system/openbox@.service || true
+  rm -f /usr/local/bin/openbox-wrapper.sh || true
 }
 
 start_units() {

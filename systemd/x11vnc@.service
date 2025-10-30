@@ -1,7 +1,7 @@
 [Unit]
 Description=x11vnc on :%i (localhost only)
-After=openbox@%i.service
-Requires=openbox@%i.service
+After=xfce@%i.service
+Requires=xfce@%i.service
 
 [Service]
 Type=simple

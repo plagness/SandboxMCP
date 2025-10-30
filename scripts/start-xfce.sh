@@ -12,12 +12,4 @@ export DISPLAY="${DISPLAY_NUM}"
 export QT_OPENGL="${QT_OPENGL:-software}"
 export LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-1}"
 
-if command -v xsetroot >/dev/null 2>&1; then
-  xsetroot -solid "#202225" || true
-fi
-
-if command -v xterm >/dev/null 2>&1; then
-  xterm &
-fi
-
-exec /usr/bin/openbox
+exec /usr/bin/startxfce4

@@ -9,7 +9,7 @@
 
 ## [1.0.0] - 2025-10-29
 - Базовая структура SandboxMCP (FastAPI + Caddy + policy + scripts + systemd).
-- Опциональный стек визуального окружения (Xvfb/Openbox/x11vnc/noVNC) с make-целями и идемпотентным установщиком.
+- Опциональный стек визуального окружения (Xvfb/XFCE/x11vnc/noVNC) с make-целями и идемпотентным установщиком.
 - Скрипты для запуска MCP (Playwright, Docker, Telegram) и bootstrap среды.
 - Документация по переменным `.env`, в том числе подробный гайд по настройке Telegram MCP и без-GPU режиму.
 - FastAPI эндпоинты `/health`, `/cua/health`, `/policy` и проверка CUA Computer Server.

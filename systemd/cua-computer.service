@@ -1,7 +1,7 @@
 [Unit]
 Description=CUA Computer Server (native)
-After=openbox@1.service
-Requires=openbox@1.service
+After=xfce@1.service
+Requires=xfce@1.service
 
 [Service]
 Environment=DISPLAY=:1

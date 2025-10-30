@@ -9,7 +9,7 @@
 - Инструменты для UI-тестов: Playwright (приоритетно) и CUA Computer Server для нативного Telegram Desktop.
 - MCP-сервисы: Playwright MCP, Docker MCP, Telegram MCP (через SSH с VDS1), опционально CUA MCP.
 - FastAPI-приложение (локально на 127.0.0.1:8100) с проксированием через Caddy.
-- Reverse-proxy Caddy с автоматическим TLS на `${SANDBOX_DOMAIN}` (по умолчанию `sandbox.localhost`, легко переключается на прод-домен через `.env`).
+- Reverse-proxy Caddy с автоматическим TLS на `${SANDBOX_DOMAIN}` (по умолчанию примерный домен `sandbox.example.com`, легко переключается на прод-домен через `.env`).
 - Документация и переменные окружения для быстрого ввода в строй.
 
 ## Быстрый старт
@@ -28,7 +28,7 @@ make compose-up               # поднимаем Caddy + FastAPI
 - `curl http://127.0.0.1:8100/cua/health` → `{"up": true, ...}` (даже при `status: 404` сервис отвечает)
 - `curl http://127.0.0.1:8100/policy` → JSON со значениями из `.env`
 - `docker compose ps` → оба контейнера `Up`
-- `systemctl is-active xvfb openbox x11vnc novnc cua-computer` → все `active`
+- `systemctl is-active xvfb xfce x11vnc novnc cua-computer` → все `active`
 
 Доступные команды Makefile:
 - `make compose-down` — остановить контейнеры
@@ -60,7 +60,7 @@ make compose-up               # поднимаем Caddy + FastAPI
 ```
 
 ## Системные сервисы
-- `xvfb.service`, `openbox.service`, `x11vnc.service`, `novnc.service` — обеспечивают графическую среду и доступ через noVNC (работают нативно, вне контейнеров).
+- `xvfb@.service`, `xfce@.service`, `x11vnc@.service`, `novnc@.service` — обеспечивают видеовывод и noVNC (работают нативно, вне контейнеров).
 - `cua-computer.service` — CUA Computer Server с ENV `DISPLAY=:1` (нативный сервис).
 Файлы unit'ов лежат в `systemd/`, установка и запуск выполняются скриптом `make setup-systemd` (`scripts/install-systemd.sh`).
 
@@ -92,14 +92,14 @@ make compose-up               # поднимаем Caddy + FastAPI
    ```
 2. Выполните (от root):
    ```bash
-   make visual-bootstrap    # ставит Xvfb/Openbox/noVNC, шрифты и браузеры (идемпотентно)
-   make visual-up           # выкладывает unit-файлы и запускает xvfb@1, openbox@1, x11vnc@1, novnc@1
+   make visual-bootstrap    # ставит Xvfb/XFCE/noVNC, шрифты и браузеры (идемпотентно)
+   make visual-up           # выкладывает unit-файлы и запускает xvfb@1, xfce@1, x11vnc@1, novnc@1
    make visual-status       # проверка статусов
    ```
    Для остановки используйте `make visual-down`.
 3. Проверки:
    ```bash
-   systemctl is-active xvfb@1 openbox@1 x11vnc@1 novnc@1
+   systemctl is-active xvfb@1 xfce@1 x11vnc@1 novnc@1
    ```
    Все сервисы должны быть `active`. Повторные вызовы команд безопасны — сценарий идемпотентен.
 
@@ -112,7 +112,7 @@ make compose-up               # поднимаем Caddy + FastAPI
     root@sandbox.example.com
   ```
   Затем откройте `http://127.0.0.1:${NOVNC_PORT}/vnc.html` (логин/пароль задаются в `.env`).
-- При запуске Openbox автоматически стартует `xterm`; закрывать его не обязательно, можно свернуть. Правый клик по рабочему столу открывает контекстное меню Openbox.
+- После подключения загрузится XFCE-панель и рабочий стол; терминал можно запустить через меню приложений (`Alt+F2` → `xfce4-terminal`).
 - Telegram Desktop:
   ```bash
   DISPLAY=${DISPLAY_NUM} QT_OPENGL=${QT_OPENGL} \
@@ -126,7 +126,7 @@ make compose-up               # поднимаем Caddy + FastAPI
 
 ### Ресурсные ориентиры
 - CPU: 1–2 vCPU достаточно; noVNC + Chromium/Telegram дают до ~80–120% одного ядра.
-- RAM: базовый стек (Xvfb+Openbox+x11vnc+noVNC) ≈ 200–300 МБ; Telegram Desktop 300–800 МБ; Chromium 300–700 МБ.
+- RAM: базовый стек (Xvfb+XFCE+x11vnc+noVNC) ≈ 300–400 МБ; Telegram Desktop 300–800 МБ; Chromium 300–700 МБ.
 - Диск: Playwright-браузеры и кэши Telegram занимают до 2–3 ГБ. Для чистки: `rm -rf ~/.local/share/TelegramDesktop/*` (после остановки Telegram).
 - Сеть: доступ только через SSH-туннель (или Caddy c basic auth, если раскомментирован домен `NOVNC_DOMAIN`).
 
@@ -135,20 +135,20 @@ make compose-up               # поднимаем Caddy + FastAPI
 
 ## Чеклист развёртывания на новый сервер
 1. **SSH**: Настроить обмен ключами между VDS1 ↔ VDS2 (`/root/.ssh/config`).
-2. **Переменные**: `cp .env.example .env`, заполнить email, домены (или оставить `.localhost` для теста), задать `BASIC_AUTH_PASS` (хэш `caddy hash-password`), TELEGRAM_*.
+2. **Переменные**: `cp .env.example .env`, заполнить email, домены (или оставить значения из шаблона, затем заменить на реальные), задать `BASIC_AUTH_PASS` (хэш `caddy hash-password`), TELEGRAM_*.
 3. **Зависимости**: `make bootstrap` (apt-пакеты, pipx-клиенты, npm-инструменты, Playwright-браузеры, venv для telegram-mcp).
-4. **Графическая среда**: `make setup-systemd` (устанавливает unit-файлы из `systemd/`, запускает Xvfb/Openbox/x11vnc/noVNC/CUA).
+4. **Графическая среда**: `make setup-systemd` (устанавливает unit-файлы из `systemd/`, запускает Xvfb/XFCE/x11vnc/noVNC/CUA).
 5. **Контейнеры**: `make compose-up` — поднимаем FastAPI + Caddy. Для остановки `make compose-down`.
 6. **Первичный вход в Telegram**: выполнить `DISPLAY=:1 telegram-desktop` через noVNC, авторизоваться и подтвердить устройства.
 7. **Проверки**:
    - `curl http://127.0.0.1:8100/health`
    - `curl http://127.0.0.1:8100/cua/health`
    - `docker compose ps`
-   - `systemctl is-active xvfb openbox x11vnc novnc cua-computer`
+   - `systemctl is-active xvfb xfce x11vnc novnc cua-computer`
    - `./scripts/run-playwright-mcp.sh --help`, `./scripts/run-docker-mcp.sh --help`, `./scripts/run-telegram-mcp.sh --help`
    - Для прод-домена: `curl -k https://${SANDBOX_DOMAIN}/health`
 
-- `.env.example` — шаблон. Скопируйте его в `.env` и заполните (по умолчанию использует `.localhost` домены, что даёт самоподписанный сертификат без обращения к ACME).
+- `.env.example` — шаблон. Скопируйте его в `.env` и заполните (используются примерные доменные имена `sandbox.example.com`, их нужно заменить на реальные).
 - `.env` — единый источник значений для compose, Caddy, FastAPI, CUA и Telegram MCP. Для экспорта значений в текущую сессию используйте `set -a && source ./.env && set +a`.
 - `BASIC_AUTH_PASS` — ожидает bcrypt-хэш (`caddy hash-password --plaintext 'пароль'`).
 - Для боевого домена пропишите `SANDBOX_DOMAIN`/`NOVNC_DOMAIN`/`API_DOMAIN` в DNS и обновите `.env`.
